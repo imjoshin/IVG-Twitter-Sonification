@@ -12,6 +12,7 @@ import twitter4j.conf.ConfigurationBuilder;
 
 public class Main {
 
+	private static Sound sound = new Sound();
 	public static void main(String[] args) {
 		Properties prop = new Properties();
 		InputStream input = null;
@@ -30,7 +31,11 @@ public class Main {
 		
 		StatusListener listener = new StatusListener(){
 	        public void onStatus(Status status) {
-	            parseStatus(status);
+	        	String language= status.getLang();
+	    		String filterLang="en";
+	    		if (filterLang.matches(language)){
+	    			parseStatus(status);
+	    		}
 	        }
 	        public void onTrackLimitationNotice(int numberOfLimitedStatuses) {}
 	        public void onException(Exception ex) {
@@ -54,12 +59,24 @@ public class Main {
 	}
 
 	public static void parseStatus(Status status){
-		String language= status.getLang();
-		String filterLang="en";
-		if (filterLang.matches(language)){
-			System.out.println(status.getUser().getName() + " : " + status.getText());
-		}
+		String text = status.getText();
+		//System.out.println(text);
 		
+		boolean isRetweet = text.startsWith("RT");
+		if(isRetweet) text = text.substring(3);
 		
+		//replace URL
+		text = text.replaceAll("(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]", "");
+		//replace mentions
+		//text = text.replaceAll("(?<=^|(?<=[^a-zA-Z0-9-_.]))@([A-Za-z]+[A-Za-z0-9]+)", "");
+		//text = text.replaceAll("(?:\\s|\\A)[@]+([A-Za-z0-9-_]+)[!:,.; ] *", "");
+		text = text.replaceAll("@[a-zA-Z0-9_]*[!:,.; ] *", "");
+		//new lines and extra spaces
+		text = text.replaceAll("\n", "");
+		text = text.replaceAll("  +", "");
+		
+		System.out.println(text);
+		
+		//sound.playNote();
 	}
 }
